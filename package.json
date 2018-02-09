@@ -4,12 +4,14 @@
   "description": "",
   "main": "stream.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard && node_modules/mocha/bin/mocha --recursive spec",
+    "compile_protobuf": "node compile_protobuf.js > protobuf/protobuf_bundle.json",
+    "prepublish": "npm run compile_protobuf && npm test"
   },
   "author": "Will Carpenter <dev.wtc3@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "protobufjs": "^6.8.4",
+    "protobufjs": "~6.8.4",
     "secp256k1": "^3.5.0",
     "uuid": "^3.2.1",
     "zeromq": "^4.6.0"

@@ -1,0 +1,22 @@
+{
+  "name": "sawtooth-jsfunctions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "stream.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Will Carpenter <dev.wtc3@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "protobufjs": "^6.8.4",
+    "secp256k1": "^3.5.0",
+    "uuid": "^3.2.1",
+    "zeromq": "^4.6.0"
+  },
+  "devDependencies": {
+    "mocha": "^5.0.0",
+    "standard": "^10.0.3",
+    "underscore": "^1.8.3"
+  }
+}

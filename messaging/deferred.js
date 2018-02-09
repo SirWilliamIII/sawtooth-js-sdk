@@ -15,7 +15,6 @@
  * ------------------------------------------------------------------------------
  */
 
-
 function deferred() {
 	if(Promise.defer) {
 		return Promise.defer

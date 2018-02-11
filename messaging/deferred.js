@@ -16,10 +16,10 @@
  */
 
 function deferred() {
-	if(Promise.defer) {
+	if (Promise.defer) {
 		return Promise.defer
 	}
-	
+
 	this.resolve = null
 	this.reject = null
 
@@ -30,6 +30,5 @@ function deferred() {
 
 	Object.freeze(this)
 }
-
 
 module.exports = deferred

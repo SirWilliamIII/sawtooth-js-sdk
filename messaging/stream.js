@@ -25,7 +25,6 @@ const { Message } = require('../protobuf')
 const deferred = require('./deferred')
 const { ValidatorConnectionError } = require('../processor/exceptions')
 
-
 const encodeMessage = (messageType, correlationId, content) => {
 	assert(
 		typeof messageType === 'number',
@@ -41,7 +40,9 @@ const encodeMessage = (messageType, correlationId, content) => {
 	)
 	assert(
 		Buffer.isBuffer(content),
-		`content must be a buffer -- was ${content.constructor ? content.constructor.name : typeof content}`
+		`content must be a buffer -- was ${
+			content.constructor ? content.constructor.name : typeof content
+		}`
 	)
 
 	return Message.encode({
@@ -49,14 +50,13 @@ const encodeMessage = (messageType, correlationId, content) => {
 		correlationId,
 		content
 	}).finish()
-}	
+}
 
 const generateId = () =>
-	crypto
-		.crypto.createHash('sha256')
+	crypto.crypto
+		.createHash('sha256')
 		.update(uuid())
 		.digest('hex')
-
 
 class Stream {
 	constructor(url) {
@@ -65,7 +65,7 @@ class Stream {
 	}
 
 	connect(cb) {
-		if(this.onConnect) {
+		if (this.onConnect) {
 			console.log(`Attempting to connect to ${this.url}`)
 		}
 
@@ -99,12 +99,65 @@ class Stream {
 		this.close()
 		Object.keys(this.futures).forEach(correlationId => {
 			this.futures[correlationId].reject(
-				new ValidatorConnectionError('The connection to validator was lost')
+				new ValidatorConnectionError(
+					'The connection to validator was lost'
+				)
 			)
 		})
-
 		this.connect(this.onConnect)
 	}
 
-	
+	send(type, content) {
+		if (this.socket) {
+			const correlationId = generateId()
+			let deferred = new Deferred()
+			this.futures[correlationId] = deferred
+
+			try {
+				this.socket.send(encodeMessage(type, correlationId, content))
+			} catch (e) {
+				delete this.futures[correlationId]
+				return Promise.reject(e)
+			}
+
+			return deferred.promise
+				.then(result => {
+					delete this.futures[correlationId]
+					return result
+				})
+				.catch(err => {
+					delete this.futures[correlationId]
+					throw err
+				})
+		} else {
+			let err = null
+			if (this.initialConnection) {
+				err = new Error('Must call `connect` before calling `send`')
+			} else {
+				err = new ValidatorConnectionError(
+					'Connection to validator is lost'
+				)
+			}
+			return Promise.reject(err)
+		}
+	}
+
+	sendBack(type, correlationId, content) {
+		if (this.socket) {
+			this.socket.send(encodeMessage(type, correlationId, content))
+		}
+	}
+
+	onReceive(cb) {
+		this.socket.on('message', buffer => {
+			let message = Message.decode(buffer)
+			if (this.futures[message.correlationId]) {
+				this.futures[message.correlationId].resolve(message.content)
+			} else {
+				process.nextTick(() => cb(message))
+			}
+		})
+	}
 }
+
+module.exports = { Stream }

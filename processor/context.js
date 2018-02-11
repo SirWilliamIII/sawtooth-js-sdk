@@ -15,6 +15,7 @@
  * ------------------------------------------------------------------------------
  */
 
+//  TP === TransactionProcessor
 const {
 	TpStateEntry,
 	TpStateGetRequest,

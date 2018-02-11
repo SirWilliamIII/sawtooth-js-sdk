@@ -1,15 +1,16 @@
 {
   "name": "sawtooth-jsfunctions",
   "version": "1.0.0",
-  "description": "",
-  "main": "stream.js",
+  "description": "Javascript SDK for Hyperledger Sawtooth",
+  "main": "index.js",
+  "repository": "https://github.com/SirWilliamIII/sawtooth-js-sdk",
   "scripts": {
     "test": "standard && node_modules/mocha/bin/mocha --recursive spec",
     "compile_protobuf": "node compile_protobuf.js > protobuf/protobuf_bundle.json",
     "prepublish": "npm run compile_protobuf && npm test"
   },
   "author": "Will Carpenter <dev.wtc3@gmail.com>",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "protobufjs": "~6.8.4",
     "secp256k1": "^3.5.0",

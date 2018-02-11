@@ -16,17 +16,16 @@
  */
 
 const protobuf = require('protobufjs')
-
 const root = protobuf.Root.fromJSON(require('./protobuf_bundle.json'))
-
 const message = root.lookup('Message')
+
 message.MessageType = message.nested.MessageType.values
 
 message.MessageType.stringValue = id => {
 	`${message.nested.MessageType.valuesById[id]}(${id})`
 }
 
- let exportableMessages = 
+ let exportableMessages =
  	Object.keys(root)
  		.filter(key => {
  			/^[A-Z]/.test(key)
@@ -35,7 +34,7 @@ message.MessageType.stringValue = id => {
  			acc[key] = root.key
  			return acc
  		}, {})
- 
+
 
 exportableMessages['Message'] = message
 

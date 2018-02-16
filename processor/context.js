@@ -15,22 +15,22 @@
  * ------------------------------------------------------------------------------
  */
 
-//  TP === TransactionProcessor
+	//  TP === TransactionProcessor
 const {
-	TpStateEntry,
-	TpStateGetRequest,
-	TpStateGetResponse,
-	TpStateSetRequest,
-	TpStateSetResponse,
-	TpStateDeleteRequest,
-	TpStateDeleteResponse,
-	TpReceiptAddDataRequest,
-	TpReceiptAddDataResponse,
-	Event,
-	TpEventAddRequest,
-	TpEventAddResponse,
-	Message
-} = require('../protobuf')
+	      TpStateEntry,
+	      TpStateGetRequest,
+	      TpStateGetResponse,
+	      TpStateSetRequest,
+	      TpStateSetResponse,
+	      TpStateDeleteRequest,
+	      TpStateDeleteResponse,
+	      TpReceiptAddDataRequest,
+	      TpReceiptAddDataResponse,
+	      Event,
+	      TpEventAddRequest,
+	      TpEventAddResponse,
+	      Message
+      } = require('../protobuf')
 
 const { AuthorizationException, InternalError } = require('../processor/exceptions')
 
@@ -73,7 +73,32 @@ class Context {
 	 *
 	 */
 
-	getState(addresses, timeout=null) {
+	getState(addresses, timeout = null) {
+		let getRequest = TpStateGetRequest.create({
+			addresses,
+			contextId: this._contextId
+		})
+		let future = this._stream.send(
+			Message.MessageType.TP_STATE_GET_REQUEST,
+			TpStateGetRequest.encode(getRequest).finish()
+		)
+		return _timeoutPromise(
+			future.then(buffer => {
+				let getResponse = TpStateGetResponse.decode(buffer)
+				let results = {}
+
+				getResponse.entries.forEach(entry => {
+					results[entry.address] = entry.data
+				})
+				if(getResponse.status === TpStateGetResponse.Status.AUTHORIZATION_ERROR) {
+					throw new AuthorizationException(
+						`Tried to get unauthorized access ${ addresses }`
+					)
+				}
+				return results
+			}),
+			timeout
+		)
 	}
 	/**
 	 *  setState requests that each address in the provided dictionary
@@ -88,7 +113,33 @@ class Context {
 	 *   @throws {AuthorizationException}
 	 */
 
-	setState(addressValuePairs, timeout=null) {
+	setState(addressValuePairs, timeout = null) {
+		let entries = Object.keys(addressValuePairs).map(address =>
+			TpStateEntry.create({
+				address,
+				data: addressValuePairs[address]
+			})
+		)
+
+		let future = this._stream.send(
+			Message.MessageType.TP_STATE_SET_REQUEST,
+			TpStateSetRequest.encode(setRequest).finish()
+		)
+
+		return _timeoutPromise(
+			future.then(buffer => {
+				let setResponse = TpStateGetResponse.decode(buffer)
+				if(setResponse.status === TpStateSetResponse.Status.AUTHORIZATION_ERROR) {
+					let addresses = Object.keys(addressValuePairs)
+					throw new AuthorizationException(
+						`Tried to set unauthorized address ${addresses}`
+					)
+				}
+				return setResponse.addresses
+			}),
+			timeout
+		)
+
 	}
 
 	/**
@@ -102,7 +153,8 @@ class Context {
 	 * @throws {AuthorizationException}
 	 */
 
-	deleteState(addresses, timeout=null) {
+	deleteState(addresses, timeout = null) {
+
 	}
 
 	/**
@@ -114,7 +166,7 @@ class Context {
 	 * error if the operation fails
 	 */
 
-	addReceiptData(data, timeout=null) {
+	addReceiptData(data, timeout = null) {
 	}
 
 	/**
@@ -132,7 +184,7 @@ class Context {
 	 * error if the operation fails
 	 */
 
-	addEvent(eventType, attributes, data, timeout=null) {
+	addEvent(eventType, attributes, data, timeout = null) {
 	}
 }
 

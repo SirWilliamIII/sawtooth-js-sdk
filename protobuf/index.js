@@ -36,6 +36,6 @@ message.MessageType.stringValue = id => {
  		}, {})
 
 
-exportableMessages['Message'] = message
+exportableMessages.Message = message
 
 module.exports = exportableMessages
